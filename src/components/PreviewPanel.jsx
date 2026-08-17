@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Eye, RefreshCw, Monitor, Tablet, Smartphone, Maximize2, ShieldCheck, Lock } from 'lucide-react';
+import { Eye, RefreshCw, Monitor, Tablet, Smartphone, Maximize2, ShieldCheck } from 'lucide-react';
 
 export function PreviewPanel({ compiledDoc, onRefresh, isCompiling }) {
-  const [viewport, setViewport] = useState('full'); // 'full', 'tablet', 'mobile'
+  const [viewport, setViewport] = useState('full');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const getViewportWidth = () => {

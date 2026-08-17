@@ -9,24 +9,23 @@ export default {
     extend: {
       colors: {
         forge: {
-          bg: '#0B0D12',
-          panel: '#12151E',
-          active: '#1A1D27',
-          border: '#2A2D35',
-          text: '#E6E9EF',
-          muted: '#8E95A5',
-          blue: '#4F8CFF',
-          blueHover: '#3b78eb',
-          green: '#3FB950',
-          greenHover: '#2ea043',
-          red: '#F85149',
-          yellow: '#D29922',
-          purple: '#A371F7',
+          bg: '#0D0D0D',         // Deep matte black (Left sidebar & main bg)
+          panel: '#181818',      // Panel containers
+          editor: '#1E1E1E',     // Monaco editor dark background
+          active: '#2A2A2A',     // Active tab/file highlight
+          border: '#282828',     // Subtle dark border
+          text: '#E1E1E1',       // Primary text
+          muted: '#8E8E8E',      // Muted file names & labels
+          blue: '#38BDF8',       // Accent sky blue
+          green: '#4ADE80',      // Accent green
+          red: '#F87171',        // Accent red
+          yellow: '#FACC15',     // Accent yellow
+          purple: '#C084FC',     // Accent purple
         }
       },
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
       }
     },
   },

@@ -12,5 +12,15 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-  }
+    chunkSizeWarningLimit: 2000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'lucide-react', 'lz-string'],
+          monaco: ['@monaco-editor/react'],
+          prettier: ['prettier'],
+        },
+      },
+    },
+  },
 });

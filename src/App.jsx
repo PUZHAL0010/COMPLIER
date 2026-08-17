@@ -16,33 +16,77 @@ export default function App() {
   // Check URL Hash for shared snippet
   const urlSnippet = decodeCodeFromUrl(window.location.hash);
 
-  // Clean starter workspace code
-  const blankAppJsx = `// Write your React 18 component code below
+  // Clean starter React 18 component
+  const defaultAppJsx = `// CodeForge React 18 Compiler
 function App() {
-  const [message, setMessage] = React.useState('Welcome to CodeForge!');
+  const [tasks, setTasks] = React.useState([
+    { id: 1, text: 'Build React 18 App', completed: true },
+    { id: 2, text: 'Add Custom Components', completed: false },
+  ]);
+  const [input, setInput] = React.useState('');
+
+  const addTask = (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    setTasks([...tasks, { id: Date.now(), text: input, completed: false }]);
+    setInput('');
+  };
+
+  const toggleTask = (id) => {
+    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  };
 
   return (
-    <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-      <h1 style={{ color: '#0284c7' }}>{message}</h1>
-      <p style={{ color: '#64748b' }}>Edit App.jsx and click Run Code to compile live.</p>
+    <div className="p-6 max-w-md mx-auto bg-slate-900 text-white rounded-xl shadow-xl space-y-4">
+      <h1 className="text-2xl font-bold text-sky-400">CodeForge Task Manager</h1>
+      
+      <form onSubmit={addTask} className="flex gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="New task..."
+          className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded text-sm focus:outline-none focus:border-sky-500"
+        />
+        <button type="submit" className="px-4 py-2 bg-sky-500 hover:bg-sky-600 rounded font-bold text-sm transition-colors">
+          Add
+        </button>
+      </form>
+
+      <ul className="space-y-2">
+        {tasks.map((task) => (
+          <li
+            key={task.id}
+            onClick={() => toggleTask(task.id)}
+            className={\`p-3 bg-slate-800 border border-slate-700 rounded cursor-pointer flex justify-between items-center transition-all \${
+              task.completed ? 'line-through opacity-60' : 'hover:border-sky-500'
+            }\`}
+          >
+            <span>{task.text}</span>
+            <span className="text-xs text-sky-400 font-mono">{task.completed ? 'Done ✓' : 'Pending'}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
 export default App;`;
 
-  const blankStylesCss = `/* Custom Stylesheet */
+  const defaultStylesCss = `/* CodeForge Stylesheet */
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #ffffff;
-  color: #0f172a;
+  background-color: #0f172a;
+  color: #f8fafc;
 }`;
 
-  const initialAppJsx = urlSnippet?.html || urlSnippet?.js || blankAppJsx;
-  const initialStylesCss = urlSnippet?.css || blankStylesCss;
+  // Code states
+  const [appJsx, setAppJsx] = useLocalStorage('codeforge_app_jsx_v5', urlSnippet?.html || urlSnippet?.js || defaultAppJsx);
+  const [stylesCss, setStylesCss] = useLocalStorage('codeforge_styles_css_v5', urlSnippet?.css || defaultStylesCss);
 
-  const [appJsx, setAppJsx] = useLocalStorage('codeforge_app_jsx_v2', initialAppJsx);
-  const [stylesCss, setStylesCss] = useLocalStorage('codeforge_styles_css_v2', initialStylesCss);
+  // Custom User Created Files State (.jsx, .js, .css, .json)
+  const [userFiles, setUserFiles] = useLocalStorage('codeforge_user_files_v5', []);
+
   const [activeFile, setActiveFile] = useState('App.jsx');
 
   // Settings & Theme
@@ -77,6 +121,29 @@ body {
     }
   }, [theme]);
 
+  // Add Custom File Handler
+  const handleAddFile = (fileName) => {
+    if (userFiles.some((f) => f.name === fileName)) return;
+    const newFile = { name: fileName, content: `// File: ${fileName}\n` };
+    setUserFiles((prev) => [...prev, newFile]);
+    setActiveFile(fileName);
+  };
+
+  // Delete Custom File Handler
+  const handleDeleteFile = (fileName) => {
+    setUserFiles((prev) => prev.filter((f) => f.name !== fileName));
+    if (activeFile === fileName) {
+      setActiveFile('App.jsx');
+    }
+  };
+
+  // Update Custom File Content
+  const handleUpdateUserFileContent = (fileName, content) => {
+    setUserFiles((prev) =>
+      prev.map((f) => (f.name === fileName ? { ...f, content } : f))
+    );
+  };
+
   // Real-time Autosave Indicator
   useEffect(() => {
     setAutosaveStatus('saving');
@@ -84,7 +151,7 @@ body {
       setAutosaveStatus('saved');
     }, 600);
     return () => clearTimeout(timer);
-  }, [appJsx, stylesCss]);
+  }, [appJsx, stylesCss, userFiles]);
 
   // Handle IPC postMessage events from sandboxed iframe
   useEffect(() => {
@@ -121,14 +188,22 @@ body {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  // Compile Handler
+  // Compile / Run Handler
   const handleRun = useCallback(() => {
     setIsCompiling(true);
     setStageLogs([]);
-    const doc = generateCompiledDoc(appJsx, stylesCss);
+
+    // Build custom files dict
+    const filesDict = {};
+    userFiles.forEach((f) => {
+      filesDict[f.name] = f.content;
+    });
+
+    const doc = generateCompiledDoc(appJsx, stylesCss, filesDict);
     setCompiledDoc(doc);
+
     setTimeout(() => setIsCompiling(false), 200);
-  }, [appJsx, stylesCss]);
+  }, [appJsx, stylesCss, userFiles]);
 
   // Initial Run on mount
   useEffect(() => {
@@ -137,20 +212,35 @@ body {
 
   // Format Code handler
   const handleFormat = async () => {
-    let codeToFormat = activeFile === 'styles.css' ? stylesCss : appJsx;
-    let lang = activeFile === 'styles.css' ? 'css' : 'javascript';
+    const isCustom = userFiles.some((f) => f.name === activeFile);
+    let codeToFormat = appJsx;
+    let lang = 'javascript';
+
+    if (activeFile === 'styles.css') {
+      codeToFormat = stylesCss;
+      lang = 'css';
+    } else if (isCustom) {
+      const fileObj = userFiles.find((f) => f.name === activeFile);
+      codeToFormat = fileObj ? fileObj.content : '';
+      lang = activeFile.endsWith('.css') ? 'css' : 'javascript';
+    } else {
+      codeToFormat = appJsx;
+    }
+
     const res = await formatCode(codeToFormat, lang);
     if (res.formatted) {
       if (activeFile === 'styles.css') setStylesCss(res.formatted);
+      else if (isCustom) handleUpdateUserFileContent(activeFile, res.formatted);
       else setAppJsx(res.formatted);
     }
   };
 
   // Reset Code handler
   const handleClearCode = () => {
-    if (window.confirm('Clear App.jsx and start with a blank editor?')) {
-      setAppJsx('// Write your React 18 component code below\nfunction App() {\n  return (\n    <div>\n      \n    </div>\n  );\n}\n\nexport default App;');
-      setStylesCss('');
+    if (window.confirm('Reset workspace code to default starter template?')) {
+      setAppJsx(defaultAppJsx);
+      setStylesCss(defaultStylesCss);
+      setUserFiles([]);
       setLogs([]);
       setStageLogs([]);
       setCompiledDoc('');
@@ -252,6 +342,9 @@ body {
           <FileExplorer
             activeFile={activeFile}
             setActiveFile={setActiveFile}
+            userFiles={userFiles}
+            onAddFile={handleAddFile}
+            onDeleteFile={handleDeleteFile}
           />
         </div>
 
@@ -272,6 +365,8 @@ body {
             setAppJsx={setAppJsx}
             stylesCss={stylesCss}
             setStylesCss={setStylesCss}
+            userFiles={userFiles}
+            onUpdateUserFileContent={handleUpdateUserFileContent}
             onFormat={handleFormat}
           />
         </div>

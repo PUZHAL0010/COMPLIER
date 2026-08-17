@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
+    "deploy": "npx gh-pages -d dist",
     "server": "node server/index.js",
     "start": "node server/index.js"
   },

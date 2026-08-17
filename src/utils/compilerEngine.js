@@ -1,6 +1,8 @@
 /**
  * CodeForge High-Performance Browser Compiler Engine
  * System-controlled locked index.html execution pipeline for React 18 & Web.
+ * 
+ * Includes CDNs for React 18, ReactDOM 18, Babel Standalone, Tailwind CSS, Bootstrap 5, and ReactBootstrap!
  */
 
 export const LOCKED_INDEX_HTML = `<!DOCTYPE html>
@@ -8,7 +10,7 @@ export const LOCKED_INDEX_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>System Controlled - CodeForge Sandbox</title>
+  <title>CodeForge Sandbox</title>
   
   <!-- System React 18 & ReactDOM 18 CDNs -->
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
@@ -16,25 +18,59 @@ export const LOCKED_INDEX_HTML = `<!DOCTYPE html>
   
   <!-- System Babel Standalone CDN -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Bootstrap 5 CSS & ReactBootstrap CDNs -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" crossorigin="anonymous" />
+  <script src="https://cdn.jsdelivr.net/npm/react-bootstrap@2.10.1/dist/react-bootstrap.min.js" crossorigin="anonymous"></script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
   <div id="root"></div>
 </body>
 </html>`;
 
-export function generateCompiledDoc(appJsx = '', stylesCss = '') {
+export function generateCompiledDoc(appJsx = '', stylesCss = '', customFilesDict = {}) {
   const hasCode = appJsx && appJsx.trim().length > 0;
+
+  // Additional custom CSS from files
+  let customCssContent = stylesCss || '';
+  Object.keys(customFilesDict).forEach((filename) => {
+    if (filename.endsWith('.css')) {
+      customCssContent += `\n${customFilesDict[filename]}`;
+    }
+  });
+
+  // Additional custom JS/JSX components from files
+  let customComponentsJs = '';
+  Object.keys(customFilesDict).forEach((filename) => {
+    if (filename.endsWith('.jsx') || filename.endsWith('.js')) {
+      customComponentsJs += `\n// File: ${filename}\n${customFilesDict[filename]}\n`;
+    }
+  });
+
+  // Sanitize export default statements for inline Babel evaluation
+  let sanitizedAppJsx = appJsx.replace(/export\s+default\s+App\s*;?/g, '');
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeForge Sandbox Execution Environment</title>
   
   <!-- Locked System CDNs -->
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Bootstrap 5 & ReactBootstrap CDNs -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" crossorigin="anonymous" />
+  <script src="https://cdn.jsdelivr.net/npm/react-bootstrap@2.10.1/dist/react-bootstrap.min.js" crossorigin="anonymous"></script>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     * { box-sizing: border-box; }
@@ -45,7 +81,7 @@ export function generateCompiledDoc(appJsx = '', stylesCss = '') {
       background-color: #ffffff;
       color: #0f172a;
     }
-    ${stylesCss}
+    ${customCssContent}
   </style>
 
   <script>
@@ -110,6 +146,9 @@ export function generateCompiledDoc(appJsx = '', stylesCss = '') {
   ${hasCode ? `
   <script type="text/babel">
     try {
+      // Expose ReactBootstrap into global script scope
+      const ReactBootstrap = window.ReactBootstrap || {};
+
       window.parent.postMessage({
         source: 'CODEFORGE_SANDBOX',
         type: 'STAGE_LOG',
@@ -124,14 +163,20 @@ export function generateCompiledDoc(appJsx = '', stylesCss = '') {
         }, '*');
       }
 
-      // Execute User React Code
-      ${appJsx}
+      // Execute Custom Helper Components
+      ${customComponentsJs}
+
+      // Execute Student App.jsx Code
+      ${sanitizedAppJsx}
 
       // Auto Mount App Component
       if (typeof App !== 'undefined') {
         const rootElement = document.getElementById('root');
-        const root = ReactDOM.createRoot(rootElement);
-        root.render(<App />);
+        if (rootElement && !rootElement._reactRoot) {
+          const root = ReactDOM.createRoot(rootElement);
+          rootElement._reactRoot = root;
+          root.render(<App />);
+        }
 
         window.parent.postMessage({
           source: 'CODEFORGE_SANDBOX',
@@ -142,7 +187,7 @@ export function generateCompiledDoc(appJsx = '', stylesCss = '') {
         window.parent.postMessage({
           source: 'CODEFORGE_SANDBOX',
           type: 'RUNTIME_ERROR',
-          payload: { message: 'Notice: Component "App" is not defined. Define "function App() { return <h1>Hello</h1>; }".' }
+          payload: { message: 'Notice: Component "App" is not defined. Define "class App extends React.Component" or "function App() { return <div>...</div>; }".' }
         }, '*');
       }
     } catch (err) {
@@ -159,8 +204,8 @@ export function generateCompiledDoc(appJsx = '', stylesCss = '') {
   ` : `
   <div style="display:flex; justify-content:center; align-items:center; height:80vh; color:#94a3b8; font-family:sans-serif; text-align:center;">
     <div>
-      <h3 style="margin-bottom:8px; color:#475569;">Ready for React Code</h3>
-      <p style="font-size:0.85rem; margin:0;">Write your React component in App.jsx and click <strong>Run Code</strong></p>
+      <h3 style="margin-bottom:8px; color:#475569;">Ready for React 18 Code</h3>
+      <p style="font-size:0.85rem; margin:0;">Write your React component in App.jsx and click <strong>▶ Run</strong></p>
     </div>
   </div>
   `}

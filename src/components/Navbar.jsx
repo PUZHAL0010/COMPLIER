@@ -1,18 +1,5 @@
 import React from 'react';
-import { 
-  Play, 
-  Wand2, 
-  Sparkles, 
-  Share2, 
-  Download, 
-  Sun, 
-  Moon, 
-  CheckCircle2, 
-  RotateCw, 
-  Hammer, 
-  Code2,
-  RotateCcw
-} from 'lucide-react';
+import { RefreshCw, Moon, Sun, Maximize2, Share2, Play, RotateCcw, Wand2, Layers } from 'lucide-react';
 
 export function Navbar({
   theme,
@@ -23,114 +10,97 @@ export function Navbar({
   onOpenTemplates,
   onOpenShare,
   onDownload,
-  autosaveStatus,
-  isCompiling
+  isCompiling = false,
 }) {
   return (
-    <header className="bg-forge-panel border-b border-forge-border text-forge-text px-4 py-2 flex items-center justify-between z-20 select-none">
-      {/* Logo & App Title */}
+    <header className="h-11 bg-[#0D0D0D] border-b border-[#282828] px-3 flex items-center justify-between select-none z-30 font-sans">
+      {/* Brand */}
       <div className="flex items-center space-x-3">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg bg-forge-blue flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-            <Hammer className="w-4.5 h-4.5 stroke-[2.5]" />
+          <div className="w-5 h-5 rounded bg-gradient-to-tr from-sky-500 to-blue-400 flex items-center justify-center text-white font-bold text-[11px] shadow-sm">
+            CF
           </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <h1 className="font-extrabold text-base tracking-tight text-white">
-                CodeForge
-              </h1>
-              <span className="text-[10px] font-mono font-bold bg-forge-bg border border-forge-border text-forge-blue px-2 py-0.5 rounded-full">
-                React 18 & Babel
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="h-4 w-[1px] bg-forge-border hidden sm:block" />
-
-        {/* Autosave Status Pill */}
-        <div className="hidden sm:flex items-center space-x-1.5 text-xs text-forge-muted">
-          {autosaveStatus === 'saving' ? (
-            <>
-              <RotateCw className="w-3.5 h-3.5 text-forge-yellow animate-spin" />
-              <span>Saving...</span>
-            </>
-          ) : (
-            <>
-              <CheckCircle2 className="w-3.5 h-3.5 text-forge-green" />
-              <span className="text-forge-text font-medium">Saved ✓</span>
-            </>
-          )}
+          <span className="font-bold text-white tracking-wide text-xs font-mono">
+            Code<span className="text-sky-400">Forge</span>
+          </span>
         </div>
       </div>
 
-      {/* Main IDE Controls */}
+      {/* Center Action: Run & Format */}
       <div className="flex items-center space-x-2">
-        {/* Primary Run Code Button */}
         <button
           onClick={onRun}
           disabled={isCompiling}
-          className="flex items-center space-x-2 bg-forge-green hover:bg-forge-greenHover text-white text-xs font-bold px-4 py-1.5 rounded-lg shadow-md active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
-          title="Compile and Run (Ctrl + Enter)"
+          className="px-3.5 py-1 rounded font-semibold text-xs text-white bg-sky-500 hover:bg-sky-600 transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-50 shadow-sm"
         >
-          <Play className="w-3.5 h-3.5 fill-current" />
-          <span>{isCompiling ? 'Running...' : 'Run Code'}</span>
+          <Play className={`w-3 h-3 ${isCompiling ? 'animate-spin' : 'fill-current'}`} />
+          <span>{isCompiling ? 'Running...' : 'Run'}</span>
         </button>
 
-        {/* Format Code */}
         <button
           onClick={onFormat}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-forge-active hover:bg-forge-border border border-forge-border text-forge-text transition-all"
-          title="Format Code with Prettier (Alt + Shift + F)"
+          className="p-1 rounded text-neutral-400 hover:text-white hover:bg-[#1C1C1C] transition-colors"
+          title="Format Code (Alt + Shift + F)"
         >
-          <Wand2 className="w-3.5 h-3.5 text-forge-blue" />
-          <span className="hidden sm:inline">Format</span>
+          <Wand2 className="w-3.5 h-3.5" />
         </button>
 
-        {/* Presets / Templates */}
-        <button
-          onClick={onOpenTemplates}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-forge-active hover:bg-forge-border border border-forge-border text-forge-text transition-all"
-          title="Choose Starter Preset"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-forge-purple" />
-          <span className="hidden sm:inline">Presets</span>
-        </button>
-
-        {/* Share Link */}
-        <button
-          onClick={onOpenShare}
-          className="p-1.5 rounded-lg text-forge-muted hover:text-white hover:bg-forge-active border border-transparent hover:border-forge-border transition-all"
-          title="Share Compressed Code URL"
-        >
-          <Share2 className="w-4 h-4 text-forge-blue" />
-        </button>
-
-        {/* Download HTML */}
-        <button
-          onClick={onDownload}
-          className="p-1.5 rounded-lg text-forge-muted hover:text-white hover:bg-forge-active border border-transparent hover:border-forge-border transition-all"
-          title="Download Code Bundle"
-        >
-          <Download className="w-4 h-4 text-forge-green" />
-        </button>
-
-        {/* Reset Code */}
         <button
           onClick={onClear}
-          className="p-1.5 rounded-lg text-forge-muted hover:text-forge-red hover:bg-forge-active border border-transparent hover:border-forge-border transition-all"
-          title="Reset Workspace Code"
+          className="p-1 rounded text-neutral-400 hover:text-red-400 hover:bg-[#1C1C1C] transition-colors"
+          title="Reset Workspace"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-3.5 h-3.5" />
         </button>
 
-        {/* Dark/Light Theme Toggle */}
+        <button
+          onClick={onOpenTemplates}
+          className="px-2 py-0.5 rounded bg-[#1C1C1C] border border-[#2A2A2A] text-neutral-300 hover:text-white text-[11px] font-mono flex items-center space-x-1"
+        >
+          <Layers className="w-3 h-3 text-sky-400" />
+          <span>Presets</span>
+        </button>
+      </div>
+
+      {/* Right Header Actions matching reference screenshot */}
+      <div className="flex items-center space-x-2">
+        <button
+          onClick={onRun}
+          className="p-1 rounded text-neutral-400 hover:text-white hover:bg-[#1C1C1C] transition-colors"
+          title="Reload Preview"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+        </button>
+
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-1.5 rounded-lg text-forge-muted hover:text-forge-yellow hover:bg-forge-active transition-all"
-          title="Toggle Dark/Light Mode"
+          className="p-1 rounded text-neutral-400 hover:text-white hover:bg-[#1C1C1C] transition-colors"
+          title="Toggle Theme"
         >
-          {theme === 'dark' ? <Sun className="w-4 h-4 text-forge-yellow" /> : <Moon className="w-4 h-4 text-forge-blue" />}
+          {theme === 'dark' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5 text-yellow-400" />}
+        </button>
+
+        <button
+          onClick={() => {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen();
+            } else {
+              document.exitFullscreen();
+            }
+          }}
+          className="p-1 rounded text-neutral-400 hover:text-white hover:bg-[#1C1C1C] transition-colors"
+          title="Toggle Fullscreen"
+        >
+          <Maximize2 className="w-3.5 h-3.5" />
+        </button>
+
+        {/* Share Pill Button matching reference screenshot */}
+        <button
+          onClick={onOpenShare}
+          className="px-3 py-1 rounded-full bg-[#242424] hover:bg-[#303030] text-white border border-[#3A3A3A] text-xs font-medium flex items-center space-x-1.5 transition-all shadow-sm"
+        >
+          <Share2 className="w-3 h-3 text-neutral-300" />
+          <span>Share</span>
         </button>
       </div>
     </header>

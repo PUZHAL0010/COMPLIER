@@ -1,7 +1,30 @@
 import React, { useState } from 'react';
 import Editor from '@monaco-editor/react';
-import { Lock, FileCode, Code2, Copy, Check, Wand2 } from 'lucide-react';
+import { Lock, ChevronLeft, X, Copy, Check, Wand2 } from 'lucide-react';
 import { LOCKED_INDEX_HTML } from '../utils/compilerEngine';
+
+const DEFAULT_PACKAGE_JSON = `{
+  "name": "codeforge-react-app",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^3.4.4"
+  }
+}`;
+
+const DEFAULT_INDEX_JS = `import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './styles.css';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);`;
 
 export function EditorPanel({
   activeFile,
@@ -10,26 +33,50 @@ export function EditorPanel({
   setAppJsx,
   stylesCss,
   setStylesCss,
+  userFiles = [],
+  onUpdateUserFileContent,
   onFormat
 }) {
   const [copied, setCopied] = useState(false);
 
-  const isReadOnly = activeFile === 'index.html';
+  // System locked files (index.html, package.json, index.js)
+  const isReadOnly = activeFile === 'index.html' || activeFile === 'package.json' || activeFile === 'index.js';
+
+  const isCustomUserFile = userFiles.some((f) => f.name === activeFile);
 
   const getCurrentCode = () => {
     if (activeFile === 'index.html') return LOCKED_INDEX_HTML;
+    if (activeFile === 'package.json') return DEFAULT_PACKAGE_JSON;
+    if (activeFile === 'index.js') return DEFAULT_INDEX_JS;
     if (activeFile === 'styles.css') return stylesCss;
+
+    if (isCustomUserFile) {
+      const fileObj = userFiles.find((f) => f.name === activeFile);
+      return fileObj ? fileObj.content : '';
+    }
+
     return appJsx;
   };
 
   const setCurrentCode = (val) => {
     if (isReadOnly) return;
-    if (activeFile === 'styles.css') setStylesCss(val);
-    else setAppJsx(val);
+
+    if (activeFile === 'styles.css') {
+      setStylesCss(val);
+      return;
+    }
+
+    if (isCustomUserFile) {
+      onUpdateUserFileContent(activeFile, val);
+      return;
+    }
+
+    setAppJsx(val);
   };
 
   const getMonacoLanguage = () => {
     if (activeFile === 'index.html') return 'html';
+    if (activeFile === 'package.json') return 'json';
     if (activeFile === 'styles.css') return 'css';
     return 'javascript'; // React JSX
   };
@@ -75,59 +122,80 @@ export function EditorPanel({
   const lineCount = getCurrentCode().split('\n').length;
 
   return (
-    <div className="h-full flex flex-col bg-forge-editor border-r border-forge-border overflow-hidden select-none">
-      {/* File Explorer Tab Bar */}
-      <div className="bg-forge-bg border-b border-forge-border flex items-center justify-between px-2 pt-1">
-        <div className="flex items-center space-x-1">
-          {/* index.html Tab */}
+    <div className="h-full flex flex-col bg-[#1E1E1E] border-r border-[#282828] overflow-hidden select-none">
+      {/* File Tab Bar matching reference screenshot */}
+      <div className="bg-[#0D0D0D] border-b border-[#282828] flex items-center justify-between px-2 pt-1">
+        <div className="flex items-center space-x-1 overflow-x-auto">
+          {/* Chevron Back Arrow matching screenshot */}
           <button
-            onClick={() => setActiveFile('index.html')}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-mono font-medium rounded-t-md border-t-2 transition-all ${
-              activeFile === 'index.html'
-                ? 'bg-forge-editor text-white border-orange-500 shadow-sm'
-                : 'text-forge-muted hover:text-forge-text border-transparent'
-            }`}
+            onClick={() => setActiveFile('App.jsx')}
+            className="p-1 text-neutral-400 hover:text-white transition-colors"
+            title="Back to App.jsx"
           >
-            <Lock className="w-3 h-3 text-forge-yellow" />
-            <FileCode className="w-3.5 h-3.5 text-orange-400" />
-            <span>index.html</span>
+            <ChevronLeft className="w-4 h-4" />
           </button>
 
           {/* App.jsx Tab */}
           <button
             onClick={() => setActiveFile('App.jsx')}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-mono font-medium rounded-t-md border-t-2 transition-all ${
+            className={`flex items-center space-x-1.5 px-3 py-1 text-xs font-sans font-medium rounded-t border-t-2 transition-all ${
               activeFile === 'App.jsx'
-                ? 'bg-forge-editor text-white border-forge-blue shadow-sm'
-                : 'text-forge-muted hover:text-forge-text border-transparent'
+                ? 'bg-[#1E1E1E] text-white border-sky-400'
+                : 'text-neutral-400 hover:text-white border-transparent'
             }`}
           >
-            <Code2 className="w-3.5 h-3.5 text-forge-blue" />
-            <span className="font-bold">App.jsx</span>
+            <span>App.jsx</span>
+          </button>
+
+          {/* index.html System Tab with X close button matching screenshot */}
+          <button
+            onClick={() => setActiveFile('index.html')}
+            className={`flex items-center space-x-2 px-3 py-1 text-xs font-sans font-medium rounded-t border-t-2 transition-all group ${
+              activeFile === 'index.html'
+                ? 'bg-[#1E1E1E] text-white border-sky-400'
+                : 'text-neutral-400 hover:text-white border-transparent'
+            }`}
+          >
+            <span>index.html</span>
+            <X className="w-3 h-3 text-neutral-500 hover:text-white transition-colors" />
           </button>
 
           {/* styles.css Tab */}
           <button
             onClick={() => setActiveFile('styles.css')}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-mono font-medium rounded-t-md border-t-2 transition-all ${
+            className={`flex items-center space-x-1.5 px-3 py-1 text-xs font-sans font-medium rounded-t border-t-2 transition-all ${
               activeFile === 'styles.css'
-                ? 'bg-forge-editor text-white border-forge-purple shadow-sm'
-                : 'text-forge-muted hover:text-forge-text border-transparent'
+                ? 'bg-[#1E1E1E] text-white border-sky-400'
+                : 'text-neutral-400 hover:text-white border-transparent'
             }`}
           >
-            <span className="font-bold text-forge-purple text-xs">#</span>
             <span>styles.css</span>
           </button>
+
+          {/* Custom File Tabs */}
+          {userFiles.map((file) => (
+            <button
+              key={file.name}
+              onClick={() => setActiveFile(file.name)}
+              className={`flex items-center space-x-1.5 px-3 py-1 text-xs font-sans font-medium rounded-t border-t-2 transition-all ${
+                activeFile === file.name
+                  ? 'bg-[#1E1E1E] text-white border-sky-400'
+                  : 'text-neutral-400 hover:text-white border-transparent'
+              }`}
+            >
+              <span>{file.name}</span>
+            </button>
+          ))}
         </div>
 
-        {/* Action Controls & Line Metrics */}
-        <div className="flex items-center space-x-3 text-xs text-forge-muted font-mono pr-2">
+        {/* Line Metrics & Action Icons */}
+        <div className="flex items-center space-x-3 text-xs text-neutral-400 font-mono pr-2 shrink-0">
           <span>{lineCount} lines</span>
           {!isReadOnly && (
             <button
               onClick={onFormat}
-              className="p-1 hover:text-forge-blue transition-colors"
-              title="Format Active Code (Alt + Shift + F)"
+              className="p-1 hover:text-sky-400 transition-colors"
+              title="Format Code (Alt + Shift + F)"
             >
               <Wand2 className="w-3.5 h-3.5" />
             </button>
@@ -135,25 +203,23 @@ export function EditorPanel({
           <button
             onClick={handleCopy}
             className="p-1 hover:text-white transition-colors"
-            title="Copy Active Code"
+            title="Copy Code"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-forge-green" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>
 
       {/* Locked System File Notice Banner */}
       {isReadOnly && (
-        <div className="bg-forge-yellow/10 border-b border-forge-yellow/30 px-3 py-1.5 flex items-center justify-between text-xs text-forge-yellow font-mono">
-          <div className="flex items-center space-x-2">
-            <Lock className="w-3.5 h-3.5 shrink-0" />
-            <span>Locked System File: index.html is controlled by CodeForge and is read-only.</span>
-          </div>
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 py-1 flex items-center space-x-2 text-xs text-amber-400 font-mono">
+          <Lock className="w-3.5 h-3.5 shrink-0" />
+          <span>Locked System File: {activeFile} is controlled by CodeForge and is read-only.</span>
         </div>
       )}
 
       {/* Monaco Editor Container */}
-      <div className="flex-1 relative overflow-hidden bg-forge-editor">
+      <div className="flex-1 relative overflow-hidden bg-[#1E1E1E]">
         <Editor
           height="100%"
           language={getMonacoLanguage()}
@@ -163,7 +229,7 @@ export function EditorPanel({
           onMount={handleEditorDidMount}
           options={editorOptions}
           loading={
-            <div className="h-full flex items-center justify-center text-forge-muted text-xs font-mono">
+            <div className="h-full flex items-center justify-center text-neutral-400 text-xs font-mono">
               Loading CodeForge Monaco Editor...
             </div>
           }
