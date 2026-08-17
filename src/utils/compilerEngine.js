@@ -50,8 +50,14 @@ export function generateCompiledDoc(appJsx = '', stylesCss = '', customFilesDict
     }
   });
 
-  // Sanitize export default statements for inline Babel evaluation
-  let sanitizedAppJsx = appJsx.replace(/export\s+default\s+App\s*;?/g, '');
+  // Sanitize ES module import & export statements for inline Babel evaluation
+  let sanitizedAppJsx = appJsx
+    .replace(/import\s+React\s*,\s*\{([^}]+)\}\s+from\s+['"]react['"];?/g, 'const {$1} = React;')
+    .replace(/import\s+\{([^}]+)\}\s+from\s+['"]react['"];?/g, 'const {$1} = React;')
+    .replace(/import\s+React\s+from\s+['"]react['"];?/g, '// import React from "react";')
+    .replace(/import\s+ReactDOM\s+from\s+['"]react-dom['"];?/g, '// import ReactDOM from "react-dom";')
+    .replace(/import\s+.*?\s+from\s+['"].*?['"];?/g, '// $&')
+    .replace(/export\s+default\s+App\s*;?/g, '');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -186,7 +192,7 @@ export function generateCompiledDoc(appJsx = '', stylesCss = '', customFilesDict
   ${hasCode ? `
   <script type="text/babel">
     try {
-      // Expose ReactBootstrap into global script scope
+      // Expose React & ReactBootstrap into global script scope
       const ReactBootstrap = window.ReactBootstrap || {};
 
       window.parent.postMessage({
