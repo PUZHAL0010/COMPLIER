@@ -2,7 +2,7 @@
  * CodeForge High-Performance Browser Compiler Engine
  * System-controlled locked index.html execution pipeline for React 18 & Web.
  * 
- * Includes CDNs for React 18, ReactDOM 18, Babel Standalone, Tailwind CSS, Bootstrap 5, and ReactBootstrap!
+ * Includes base styling for standard HTML buttons and controls so unstyled <button> tags render clearly!
  */
 
 export const LOCKED_INDEX_HTML = `<!DOCTYPE html>
@@ -81,6 +81,46 @@ export function generateCompiledDoc(appJsx = '', stylesCss = '', customFilesDict
       background-color: #ffffff;
       color: #0f172a;
     }
+
+    /* Base Styling for Standard HTML Controls (Ensures unstyled <button> tags render visibly!) */
+    button {
+      display: inline-block;
+      padding: 6px 14px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #0f172a;
+      background-color: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 3px 4px;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    button:hover {
+      background-color: #e2e8f0;
+      border-color: #94a3b8;
+    }
+    button:active {
+      background-color: #cbd5e1;
+      transform: translateY(1px);
+    }
+
+    input[type="text"], input[type="number"], select, textarea {
+      padding: 6px 12px;
+      font-size: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      margin: 3px 4px;
+      background-color: #ffffff;
+      color: #0f172a;
+      outline: none;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+
     ${customCssContent}
   </style>
 
