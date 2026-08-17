@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
-import Editor from '@monaco-editor/react';
+import Editor, { loader } from '@monaco-editor/react';
 import { Lock, ChevronLeft, X, Copy, Check, Wand2 } from 'lucide-react';
 import { LOCKED_INDEX_HTML } from '../utils/compilerEngine';
+
+// Configure Monaco Editor loader CDN for GitHub Pages reliability
+loader.config({
+  paths: {
+    vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs',
+  },
+});
 
 const DEFAULT_PACKAGE_JSON = `{
   "name": "codeforge-react-app",
@@ -78,7 +85,7 @@ export function EditorPanel({
     if (activeFile === 'index.html') return 'html';
     if (activeFile === 'package.json') return 'json';
     if (activeFile === 'styles.css') return 'css';
-    return 'javascript'; // React JSX
+    return 'javascript';
   };
 
   const handleEditorDidMount = (editor, monaco) => {
@@ -123,10 +130,9 @@ export function EditorPanel({
 
   return (
     <div className="h-full flex flex-col bg-[#1E1E1E] border-r border-[#282828] overflow-hidden select-none">
-      {/* File Tab Bar matching reference screenshot */}
+      {/* File Tab Bar */}
       <div className="bg-[#0D0D0D] border-b border-[#282828] flex items-center justify-between px-2 pt-1">
         <div className="flex items-center space-x-1 overflow-x-auto">
-          {/* Chevron Back Arrow matching screenshot */}
           <button
             onClick={() => setActiveFile('App.jsx')}
             className="p-1 text-neutral-400 hover:text-white transition-colors"
@@ -147,7 +153,7 @@ export function EditorPanel({
             <span>App.jsx</span>
           </button>
 
-          {/* index.html System Tab with X close button matching screenshot */}
+          {/* index.html System Tab */}
           <button
             onClick={() => setActiveFile('index.html')}
             className={`flex items-center space-x-2 px-3 py-1 text-xs font-sans font-medium rounded-t border-t-2 transition-all group ${
