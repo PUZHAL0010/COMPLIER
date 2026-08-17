@@ -34,7 +34,7 @@ var _g=Object.defineProperty;var Hl=r=>{throw TypeError(r)};var Lg=(r,t,e)=>t in
 ${e[o]}`)});let i="";Object.keys(e).forEach(o=>{(o.endsWith(".jsx")||o.endsWith(".js"))&&(i+=`
 // File: ${o}
 ${e[o]}
-`)});let a=r.replace(/export\s+default\s+App\s*;?/g,"");return`<!DOCTYPE html>
+`)});let a=r.replace(/import\s+React\s*,\s*\{([^}]+)\}\s+from\s+['"]react['"];?/g,"const {$1} = React;").replace(/import\s+\{([^}]+)\}\s+from\s+['"]react['"];?/g,"const {$1} = React;").replace(/import\s+React\s+from\s+['"]react['"];?/g,'// import React from "react";').replace(/import\s+ReactDOM\s+from\s+['"]react-dom['"];?/g,'// import ReactDOM from "react-dom";').replace(/import\s+.*?\s+from\s+['"].*?['"];?/g,"// $&").replace(/export\s+default\s+App\s*;?/g,"");return`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -167,7 +167,7 @@ ${e[o]}
   ${s?`
   <script type="text/babel">
     try {
-      // Expose ReactBootstrap into global script scope
+      // Expose React & ReactBootstrap into global script scope
       const ReactBootstrap = window.ReactBootstrap || {};
 
       window.parent.postMessage({
